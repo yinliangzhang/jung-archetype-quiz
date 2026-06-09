@@ -75,17 +75,8 @@ export default function ResultPage() {
     }
 
     const url = createShareUrl(result);
-    const title = "荣格12原型人格测试";
-    const text = topProfiles[0]
-      ? `我的主人格是${topProfiles[0].profile.chineseName}，来测测你的12原型人格。`
-      : "来测测你的荣格12原型人格。";
 
     try {
-      if (navigator.share) {
-        await navigator.share({ title, text, url });
-        return;
-      }
-
       await navigator.clipboard.writeText(url);
       setShareState("copied");
     } catch {
@@ -186,11 +177,13 @@ export default function ResultPage() {
               onClick={shareResult}
               className="rounded-2xl bg-[#191714] px-5 py-4 font-semibold text-white"
             >
-              分享结果
+              复制结果链接
             </button>
           </div>
           {shareState === "copied" && (
-            <p className="mt-3 text-center text-sm text-[#0f766e]">结果链接已复制</p>
+            <p className="mt-3 text-center text-sm text-[#0f766e]">
+              结果链接已复制，去微信聊天窗口粘贴发送即可
+            </p>
           )}
           {shareState === "error" && (
             <p className="mt-3 text-center text-sm text-[#9b2c2c]">分享失败，请手动复制链接</p>
