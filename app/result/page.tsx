@@ -10,7 +10,7 @@ import {
 } from "@/lib/scoring";
 import type { ArchetypeKey } from "@/lib/archetypes";
 
-type ShareState = "idle" | "copied" | "error";
+type PosterState = "idle" | "ready" | "error";
 const SHARE_PARAM = "result";
 const NETLIFY_FORM_NAME = "quiz-leads";
 
@@ -24,7 +24,8 @@ export default function ResultPage() {
   const [result, setResult] = useState<QuizResult | null>(null);
   const [contact, setContact] = useState<ContactInfo | null>(null);
   const [isSharedResult, setIsSharedResult] = useState(false);
-  const [shareState, setShareState] = useState<ShareState>("idle");
+  const [posterState, setPosterState] = useState<PosterState>("idle");
+  const [posterUrl, setPosterUrl] = useState("");
 
   useEffect(() => {
     const sharedPayload = new URLSearchParams(window.location.search).get(SHARE_PARAM);
@@ -69,18 +70,23 @@ export default function ResultPage() {
     }));
   }, [result]);
 
-  async function shareResult() {
+  function generatePoster() {
     if (!result) {
       return;
     }
 
-    const url = createShareUrl(result);
-
     try {
-      await navigator.clipboard.writeText(url);
-      setShareState("copied");
+      const nextPosterUrl = createPosterDataUrl({
+        primary,
+        secondary,
+        hidden,
+        origin: window.location.origin
+      });
+      setPosterUrl(nextPosterUrl);
+      setPosterState("ready");
+      downloadPoster(nextPosterUrl, primary.profile.chineseName);
     } catch {
-      setShareState("error");
+      setPosterState("error");
     }
   }
 
@@ -174,24 +180,36 @@ export default function ResultPage() {
             </Link>
             <button
               type="button"
-              onClick={shareResult}
+              onClick={generatePoster}
               className="rounded-2xl bg-[#191714] px-5 py-4 font-semibold text-white"
             >
-              复制结果链接
+              生成结果海报
             </button>
           </div>
-          {shareState === "copied" && (
+          {posterState === "ready" && (
             <p className="mt-3 text-center text-sm text-[#0f766e]">
-              结果链接已复制，去微信聊天窗口粘贴发送即可
+              海报已生成。如手机没有自动保存，可长按下方海报保存。
             </p>
           )}
-          {shareState === "error" && (
-            <p className="mt-3 text-center text-sm text-[#9b2c2c]">分享失败，请手动复制链接</p>
+          {posterState === "error" && (
+            <p className="mt-3 text-center text-sm text-[#9b2c2c]">海报生成失败，请稍后再试</p>
           )}
-          {!isSharedResult && (
-            <p className="mt-3 text-center text-xs leading-5 text-[#817a70]">
-              分享链接只包含人格结果，不包含微信号或手机号。
-            </p>
+          {posterUrl && (
+            <div className="mt-4 rounded-[24px] border border-[#e7dfd2] bg-white p-3 shadow-sm">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={posterUrl}
+                alt="人格测试结果海报"
+                className="w-full rounded-[18px] border border-[#f0e8dc]"
+              />
+              <a
+                href={posterUrl}
+                download={`荣格12原型人格测试-${primary.profile.chineseName}.png`}
+                className="mt-3 flex w-full justify-center rounded-2xl border border-[#dfd5c6] bg-[#fffdf8] px-5 py-3 text-sm font-semibold text-[#3f3a34]"
+              >
+                下载海报
+              </a>
+            </div>
           )}
         </div>
       </div>
@@ -199,21 +217,232 @@ export default function ResultPage() {
   );
 }
 
-function createShareUrl(result: QuizResult) {
-  const url = new URL(window.location.href);
-  url.pathname = "/result";
-  url.search = `${SHARE_PARAM}=${encodeShareResult(result)}`;
-  url.hash = "";
-  return url.toString();
+function createPosterDataUrl({
+  primary,
+  secondary,
+  hidden,
+  origin
+}: {
+  primary: ResultProfile;
+  secondary: ResultProfile;
+  hidden: ResultProfile;
+  origin: string;
+}) {
+  const canvas = document.createElement("canvas");
+  const width = 1080;
+  const height = 1600;
+  const scale = window.devicePixelRatio || 1;
+  canvas.width = width * scale;
+  canvas.height = height * scale;
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("Canvas is not supported");
+  }
+
+  context.scale(scale, scale);
+
+  const background = context.createLinearGradient(0, 0, width, height);
+  background.addColorStop(0, "#ecf7f2");
+  background.addColorStop(0.48, "#fffdf8");
+  background.addColorStop(1, "#f8ebe2");
+  context.fillStyle = background;
+  context.fillRect(0, 0, width, height);
+
+  drawPosterCard(context, 70, 80, 940, 1440, 46);
+
+  context.fillStyle = "#0f766e";
+  context.font = "700 40px Arial, PingFang SC, Microsoft YaHei, sans-serif";
+  context.fillText("J U N G   A R C H E T Y P E", 120, 170);
+
+  context.fillStyle = "#191714";
+  context.font = "700 72px Arial, PingFang SC, Microsoft YaHei, sans-serif";
+  context.fillText("荣格12原型人格测试", 120, 270);
+
+  context.fillStyle = "#6c675f";
+  context.font = "400 34px Arial, PingFang SC, Microsoft YaHei, sans-serif";
+  context.fillText("我的核心人格原型是", 120, 350);
+
+  context.fillStyle = "#191714";
+  context.font = "800 118px Arial, PingFang SC, Microsoft YaHei, sans-serif";
+  context.fillText(primary.profile.chineseName, 120, 500);
+
+  context.fillStyle = "#b7791f";
+  context.font = "700 44px Arial, PingFang SC, Microsoft YaHei, sans-serif";
+  context.fillText(`${primary.profile.englishName} · ${primary.score}分`, 124, 575);
+
+  drawScorePill(context, "副人格", secondary.profile.chineseName, secondary.score, 120, 650);
+  drawScorePill(context, "隐藏人格", hidden.profile.chineseName, hidden.score, 560, 650);
+
+  context.fillStyle = "#0b4f49";
+  context.font = "700 34px Arial, PingFang SC, Microsoft YaHei, sans-serif";
+  context.fillText("关键词", 120, 830);
+  drawKeywords(context, primary.profile.keywords, 120, 870);
+
+  context.fillStyle = "#191714";
+  context.font = "700 38px Arial, PingFang SC, Microsoft YaHei, sans-serif";
+  context.fillText("人格解读", 120, 1040);
+
+  context.fillStyle = "#5d574f";
+  context.font = "400 34px Arial, PingFang SC, Microsoft YaHei, sans-serif";
+  drawWrappedText(context, primary.profile.core, 120, 1100, 840, 54, 5);
+
+  context.fillStyle = "#191714";
+  context.font = "700 32px Arial, PingFang SC, Microsoft YaHei, sans-serif";
+  context.fillText("生成你的专属人格报告", 120, 1370);
+
+  context.fillStyle = "#817a70";
+  context.font = "400 28px Arial, PingFang SC, Microsoft YaHei, sans-serif";
+  drawWrappedText(context, origin, 120, 1420, 840, 40, 2);
+
+  context.fillStyle = "#0f766e";
+  context.font = "700 26px Arial, PingFang SC, Microsoft YaHei, sans-serif";
+  context.fillText("24个问题，了解你的核心人格原型", 120, 1495);
+
+  return canvas.toDataURL("image/png");
 }
 
-function encodeShareResult(result: QuizResult) {
-  const payload = JSON.stringify({ version: 1, result });
-  return window
-    .btoa(encodeURIComponent(payload))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "");
+function downloadPoster(dataUrl: string, primaryName: string) {
+  const link = document.createElement("a");
+  link.href = dataUrl;
+  link.download = `荣格12原型人格测试-${primaryName}.png`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
+type ResultProfile = {
+  archetype: ArchetypeKey;
+  score: number;
+  rank: number;
+  profile: ReturnType<typeof getProfile>;
+};
+
+function drawPosterCard(
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number
+) {
+  context.save();
+  context.shadowColor = "rgba(23, 23, 23, 0.12)";
+  context.shadowBlur = 44;
+  context.shadowOffsetY = 22;
+  roundedRect(context, x, y, width, height, radius);
+  context.fillStyle = "rgba(255, 253, 248, 0.92)";
+  context.fill();
+  context.shadowColor = "transparent";
+  context.strokeStyle = "#e7dfd2";
+  context.lineWidth = 2;
+  context.stroke();
+  context.restore();
+}
+
+function drawScorePill(
+  context: CanvasRenderingContext2D,
+  label: string,
+  name: string,
+  score: number,
+  x: number,
+  y: number
+) {
+  roundedRect(context, x, y, 390, 120, 28);
+  context.fillStyle = "#fffdf8";
+  context.fill();
+  context.strokeStyle = "#e7dfd2";
+  context.lineWidth = 2;
+  context.stroke();
+
+  context.fillStyle = "#817a70";
+  context.font = "700 26px Arial, PingFang SC, Microsoft YaHei, sans-serif";
+  context.fillText(label, x + 28, y + 44);
+
+  context.fillStyle = "#191714";
+  context.font = "700 42px Arial, PingFang SC, Microsoft YaHei, sans-serif";
+  context.fillText(`${name} ${score}分`, x + 28, y + 92);
+}
+
+function drawKeywords(
+  context: CanvasRenderingContext2D,
+  keywords: string[],
+  startX: number,
+  startY: number
+) {
+  let x = startX;
+  let y = startY;
+
+  keywords.forEach((keyword) => {
+    context.font = "700 30px Arial, PingFang SC, Microsoft YaHei, sans-serif";
+    const pillWidth = context.measureText(keyword).width + 56;
+    if (x + pillWidth > 960) {
+      x = startX;
+      y += 74;
+    }
+
+    roundedRect(context, x, y, pillWidth, 54, 27);
+    context.fillStyle = "#e9f5f2";
+    context.fill();
+    context.fillStyle = "#0b4f49";
+    context.fillText(keyword, x + 28, y + 37);
+    x += pillWidth + 18;
+  });
+}
+
+function drawWrappedText(
+  context: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
+  maxLines: number
+) {
+  let line = "";
+  let lines = 0;
+
+  for (const char of text) {
+    const testLine = line + char;
+    if (context.measureText(testLine).width > maxWidth && line) {
+      context.fillText(lines === maxLines - 1 ? `${line}...` : line, x, y);
+      lines += 1;
+      if (lines >= maxLines) {
+        return;
+      }
+      line = char;
+      y += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+
+  if (line && lines < maxLines) {
+    context.fillText(line, x, y);
+  }
+}
+
+function roundedRect(
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number
+) {
+  context.beginPath();
+  context.moveTo(x + radius, y);
+  context.lineTo(x + width - radius, y);
+  context.quadraticCurveTo(x + width, y, x + width, y + radius);
+  context.lineTo(x + width, y + height - radius);
+  context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  context.lineTo(x + radius, y + height);
+  context.quadraticCurveTo(x, y + height, x, y + height - radius);
+  context.lineTo(x, y + radius);
+  context.quadraticCurveTo(x, y, x + radius, y);
+  context.closePath();
 }
 
 function decodeShareResult(payload: string): QuizResult | null {
@@ -294,9 +523,6 @@ function LeadCaptureGate({
         <p className="mt-4 text-base leading-7 text-[#6c675f]">
           填写昵称和手机号后，即可查看主人格、副人格、隐藏人格以及详细分析。
         </p>
-        <p className="mt-3 rounded-2xl bg-[#f0e8dc] px-4 py-3 text-xs leading-5 text-[#6c675f]">
-          提交即表示你同意我们记录昵称、手机号和访问IP，用于保存测试结果与后续沟通。
-        </p>
 
         <form className="mt-7" onSubmit={submitContact}>
           <label className="block">
@@ -337,9 +563,6 @@ function LeadCaptureGate({
           </button>
         </form>
 
-        <p className="mt-5 text-xs leading-5 text-[#817a70]">
-          本地预览会先保存到浏览器。部署到 Netlify 后，可在 Netlify 后台 Forms 里查看提交记录。
-        </p>
       </section>
     </main>
   );
