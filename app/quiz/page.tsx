@@ -1,8 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ANSWERS_KEY, calculateResult, STORAGE_KEY, type AnswerMap } from "@/lib/scoring";
+import {
+  ANSWERS_KEY,
+  CONTACT_STORAGE_KEY,
+  calculateResult,
+  STORAGE_KEY,
+  type AnswerMap
+} from "@/lib/scoring";
 import { questions } from "@/lib/questions";
 import type { ArchetypeKey } from "@/lib/archetypes";
 
@@ -10,6 +16,7 @@ export default function QuizPage() {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<AnswerMap>({});
+  const autoNextTimer = useRef<number | null>(null);
 
   const currentQuestion = questions[currentIndex];
   const selected = answers[currentQuestion.id];
@@ -19,21 +26,31 @@ export default function QuizPage() {
   const answeredCount = useMemo(() => Object.keys(answers).length, [answers]);
 
   function selectOption(archetype: ArchetypeKey) {
-    setAnswers((previous) => ({
-      ...previous,
+    if (autoNextTimer.current) {
+      window.clearTimeout(autoNextTimer.current);
+    }
+
+    const nextAnswers = {
+      ...answers,
       [currentQuestion.id]: archetype
-    }));
+    };
+
+    setAnswers(nextAnswers);
+    autoNextTimer.current = window.setTimeout(() => {
+      goNext(nextAnswers);
+    }, 280);
   }
 
-  function goNext() {
-    if (!selected) {
+  function goNext(nextAnswers = answers) {
+    if (!nextAnswers[currentQuestion.id]) {
       return;
     }
 
     if (isLastQuestion) {
-      const result = calculateResult(answers);
-      window.localStorage.setItem(ANSWERS_KEY, JSON.stringify(answers));
+      const result = calculateResult(nextAnswers);
+      window.localStorage.setItem(ANSWERS_KEY, JSON.stringify(nextAnswers));
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(result));
+      window.localStorage.removeItem(CONTACT_STORAGE_KEY);
       router.push("/result");
       return;
     }
@@ -42,6 +59,10 @@ export default function QuizPage() {
   }
 
   function goPrevious() {
+    if (autoNextTimer.current) {
+      window.clearTimeout(autoNextTimer.current);
+    }
+
     setCurrentIndex((index) => Math.max(0, index - 1));
   }
 
@@ -65,6 +86,9 @@ export default function QuizPage() {
         <h1 className="text-2xl font-semibold leading-snug text-[#191714] sm:text-3xl">
           {currentQuestion.text}
         </h1>
+        <p className="mt-4 text-sm leading-6 text-[#817a70]">
+          选择后将自动进入下一题，你也可以用“上一题”返回修改。
+        </p>
 
         <div className="mt-8 grid gap-3">
           {currentQuestion.options.map((option, index) => {
@@ -108,7 +132,7 @@ export default function QuizPage() {
           <button
             type="button"
             data-testid="next-button"
-            onClick={goNext}
+            onClick={() => goNext()}
             disabled={!selected}
             className="rounded-2xl bg-[#191714] px-5 py-4 font-semibold text-white transition hover:bg-[#2a261f] disabled:cursor-not-allowed disabled:bg-[#b7aea2]"
           >

@@ -18,6 +18,7 @@ export type QuizResult = {
 
 export const STORAGE_KEY = "jung-archetype-quiz-result";
 export const ANSWERS_KEY = "jung-archetype-quiz-answers";
+export const CONTACT_STORAGE_KEY = "jung-archetype-quiz-contact";
 
 export function createEmptyScores(): Record<ArchetypeKey, number> {
   return archetypeOrder.reduce(

@@ -1,18 +1,44 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { getProfile, STORAGE_KEY, type QuizResult } from "@/lib/scoring";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
+import {
+  CONTACT_STORAGE_KEY,
+  getProfile,
+  STORAGE_KEY,
+  type QuizResult
+} from "@/lib/scoring";
 import type { ArchetypeKey } from "@/lib/archetypes";
 
 type ShareState = "idle" | "copied" | "error";
+const SHARE_PARAM = "result";
+const NETLIFY_FORM_NAME = "quiz-leads";
+
+type ContactInfo = {
+  nickname: string;
+  phone: string;
+  submittedAt: string;
+};
 
 export default function ResultPage() {
   const [result, setResult] = useState<QuizResult | null>(null);
+  const [contact, setContact] = useState<ContactInfo | null>(null);
+  const [isSharedResult, setIsSharedResult] = useState(false);
   const [shareState, setShareState] = useState<ShareState>("idle");
 
   useEffect(() => {
+    const sharedPayload = new URLSearchParams(window.location.search).get(SHARE_PARAM);
+    if (sharedPayload) {
+      const sharedResult = decodeShareResult(sharedPayload);
+      if (sharedResult) {
+        setResult(sharedResult);
+        setIsSharedResult(true);
+        return;
+      }
+    }
+
     const rawResult = window.localStorage.getItem(STORAGE_KEY);
+    const rawContact = window.localStorage.getItem(CONTACT_STORAGE_KEY);
     if (!rawResult) {
       return;
     }
@@ -21,6 +47,14 @@ export default function ResultPage() {
       setResult(JSON.parse(rawResult) as QuizResult);
     } catch {
       window.localStorage.removeItem(STORAGE_KEY);
+    }
+
+    if (rawContact) {
+      try {
+        setContact(JSON.parse(rawContact) as ContactInfo);
+      } catch {
+        window.localStorage.removeItem(CONTACT_STORAGE_KEY);
+      }
     }
   }, []);
 
@@ -36,7 +70,11 @@ export default function ResultPage() {
   }, [result]);
 
   async function shareResult() {
-    const url = window.location.href;
+    if (!result) {
+      return;
+    }
+
+    const url = createShareUrl(result);
     const title = "荣格12原型人格测试";
     const text = topProfiles[0]
       ? `我的主人格是${topProfiles[0].profile.chineseName}，来测测你的12原型人格。`
@@ -74,15 +112,34 @@ export default function ResultPage() {
 
   const [primary, secondary, hidden] = topProfiles;
 
+  if (!contact && !isSharedResult) {
+    return (
+      <LeadCaptureGate
+        result={result}
+        onSubmit={(nextContact) => {
+          window.localStorage.setItem(CONTACT_STORAGE_KEY, JSON.stringify(nextContact));
+          setContact(nextContact);
+        }}
+      />
+    );
+  }
+
   return (
     <main className="safe-bottom min-h-dvh bg-[linear-gradient(150deg,#fffdf8_0%,#f5efe5_45%,#e9f5f2_100%)] px-5 py-6">
       <div className="mx-auto w-full max-w-3xl">
         <header className="mb-6 rounded-[28px] border border-white/70 bg-white/78 p-6 shadow-soft backdrop-blur sm:p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#0f766e]">Your Result</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#0f766e]">
+            {isSharedResult ? "Shared Result" : "Your Result"}
+          </p>
           <h1 className="mt-3 text-3xl font-semibold leading-tight text-[#191714] sm:text-4xl">
             你的主人格是：{primary.profile.chineseName}
           </h1>
           <p className="mt-3 text-lg text-[#6c675f]">{primary.profile.englishName}</p>
+          {isSharedResult && (
+            <p className="mt-4 rounded-2xl bg-[#e9f5f2] px-4 py-3 text-sm leading-6 text-[#0b4f49]">
+              这是好友分享给你的测试结果。你也可以点击下方“重新测试”，生成自己的结果。
+            </p>
+          )}
 
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
             <ScoreCard label="主人格 Top 1" name={primary.profile.chineseName} score={primary.score} />
@@ -133,15 +190,216 @@ export default function ResultPage() {
             </button>
           </div>
           {shareState === "copied" && (
-            <p className="mt-3 text-center text-sm text-[#0f766e]">链接已复制</p>
+            <p className="mt-3 text-center text-sm text-[#0f766e]">结果链接已复制</p>
           )}
           {shareState === "error" && (
             <p className="mt-3 text-center text-sm text-[#9b2c2c]">分享失败，请手动复制链接</p>
+          )}
+          {!isSharedResult && (
+            <p className="mt-3 text-center text-xs leading-5 text-[#817a70]">
+              分享链接只包含人格结果，不包含微信号或手机号。
+            </p>
           )}
         </div>
       </div>
     </main>
   );
+}
+
+function createShareUrl(result: QuizResult) {
+  const url = new URL(window.location.href);
+  url.pathname = "/result";
+  url.search = `${SHARE_PARAM}=${encodeShareResult(result)}`;
+  url.hash = "";
+  return url.toString();
+}
+
+function encodeShareResult(result: QuizResult) {
+  const payload = JSON.stringify({ version: 1, result });
+  return window
+    .btoa(encodeURIComponent(payload))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+}
+
+function decodeShareResult(payload: string): QuizResult | null {
+  try {
+    const normalizedPayload = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const paddedPayload = normalizedPayload.padEnd(
+      normalizedPayload.length + ((4 - (normalizedPayload.length % 4)) % 4),
+      "="
+    );
+    const parsed = JSON.parse(decodeURIComponent(window.atob(paddedPayload))) as {
+      result?: QuizResult;
+    };
+
+    if (!parsed.result?.topThree || parsed.result.topThree.length < 3) {
+      return null;
+    }
+
+    return parsed.result;
+  } catch {
+    return null;
+  }
+}
+
+function LeadCaptureGate({
+  result,
+  onSubmit
+}: {
+  result: QuizResult;
+  onSubmit: (contact: ContactInfo) => void;
+}) {
+  const [nickname, setNickname] = useState("");
+  const [phone, setPhone] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function submitContact(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const normalizedNickname = nickname.trim();
+    const normalizedPhone = phone.trim();
+
+    if (normalizedNickname.length < 1) {
+      setError("请输入昵称");
+      return;
+    }
+
+    if (!/^1[3-9]\d{9}$/.test(normalizedPhone)) {
+      setError("请输入正确的11位手机号");
+      return;
+    }
+
+    const nextContact = {
+      nickname: normalizedNickname,
+      phone: normalizedPhone,
+      submittedAt: new Date().toISOString()
+    };
+
+    setIsSubmitting(true);
+    try {
+      await submitLeadToNetlify(nextContact, result);
+    } catch (error) {
+      console.warn("Lead submission failed. The contact is saved locally only.", error);
+    } finally {
+      setIsSubmitting(false);
+      onSubmit(nextContact);
+    }
+  }
+
+  return (
+    <main className="safe-bottom mx-auto flex min-h-dvh w-full max-w-2xl flex-col justify-center px-5 py-8">
+      <section className="rounded-[28px] border border-[#e7dfd2] bg-white/86 p-7 shadow-soft backdrop-blur sm:p-9">
+        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#0f766e]">
+          Result Ready
+        </p>
+        <h1 className="mt-3 text-3xl font-semibold leading-tight text-[#191714]">
+          测试完成，领取你的完整人格报告
+        </h1>
+        <p className="mt-4 text-base leading-7 text-[#6c675f]">
+          填写昵称和手机号后，即可查看主人格、副人格、隐藏人格以及详细分析。
+        </p>
+        <p className="mt-3 rounded-2xl bg-[#f0e8dc] px-4 py-3 text-xs leading-5 text-[#6c675f]">
+          提交即表示你同意我们记录昵称、手机号和访问IP，用于保存测试结果与后续沟通。
+        </p>
+
+        <form className="mt-7" onSubmit={submitContact}>
+          <label className="block">
+            <span className="text-sm font-semibold text-[#3f3a34]">昵称</span>
+            <input
+              value={nickname}
+              onChange={(event) => {
+                setNickname(event.target.value);
+                setError("");
+              }}
+              placeholder="请输入昵称"
+              className="mt-2 w-full rounded-2xl border border-[#dfd5c6] bg-[#fffdf8] px-4 py-4 text-base text-[#191714] outline-none transition placeholder:text-[#b7aea2] focus:border-[#0f766e] focus:ring-4 focus:ring-[#0f766e]/10"
+            />
+          </label>
+
+          <label className="mt-5 block">
+            <span className="text-sm font-semibold text-[#3f3a34]">手机号</span>
+            <input
+              value={phone}
+              onChange={(event) => {
+                setPhone(event.target.value);
+                setError("");
+              }}
+              inputMode="tel"
+              placeholder="请输入手机号"
+              className="mt-2 w-full rounded-2xl border border-[#dfd5c6] bg-[#fffdf8] px-4 py-4 text-base text-[#191714] outline-none transition placeholder:text-[#b7aea2] focus:border-[#0f766e] focus:ring-4 focus:ring-[#0f766e]/10"
+            />
+          </label>
+
+          {error && <p className="mt-3 text-sm text-[#9b2c2c]">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="mt-6 w-full rounded-2xl bg-[#191714] px-6 py-4 text-base font-semibold text-white shadow-lg shadow-black/10 transition hover:bg-[#2a261f] disabled:cursor-not-allowed disabled:bg-[#b7aea2]"
+          >
+            {isSubmitting ? "正在生成报告..." : "查看完整结果"}
+          </button>
+        </form>
+
+        <p className="mt-5 text-xs leading-5 text-[#817a70]">
+          本地预览会先保存到浏览器。部署到 Netlify 后，可在 Netlify 后台 Forms 里查看提交记录。
+        </p>
+      </section>
+    </main>
+  );
+}
+
+async function submitLeadToNetlify(contact: ContactInfo, result: QuizResult) {
+  const response = await fetch("/api/submit-lead", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      contact,
+      result
+    })
+  });
+
+  if (!response.ok) {
+    await submitLeadToNetlifyForms(contact, result);
+  }
+}
+
+async function submitLeadToNetlifyForms(contact: ContactInfo, result: QuizResult) {
+  const [primary, secondary, hidden] = result.topThree;
+  const formData = new URLSearchParams({
+    "form-name": NETLIFY_FORM_NAME,
+    nickname: contact.nickname,
+    phone: contact.phone,
+    visitor_ip: "",
+    visitor_country: "",
+    visitor_region: "",
+    visitor_city: "",
+    primary_archetype: `${getProfile(primary.archetype).chineseName} / ${primary.archetype} / ${primary.score}分`,
+    secondary_archetype: `${getProfile(secondary.archetype).chineseName} / ${secondary.archetype} / ${secondary.score}分`,
+    hidden_archetype: `${getProfile(hidden.archetype).chineseName} / ${hidden.archetype} / ${hidden.score}分`,
+    scores: JSON.stringify(result.scores),
+    completed_at: result.completedAt,
+    submitted_at: contact.submittedAt,
+    page_url: window.location.href,
+    "bot-field": ""
+  });
+
+  const response = await fetch("/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: formData.toString()
+  });
+
+  if (!response.ok) {
+    throw new Error(`Netlify form submission failed: ${response.status}`);
+  }
 }
 
 function ScoreCard({ label, name, score }: { label: string; name: string; score: number }) {
