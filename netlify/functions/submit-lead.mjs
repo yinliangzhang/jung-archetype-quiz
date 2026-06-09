@@ -55,7 +55,7 @@ export default async function submitLead(request, context) {
       "bot-field": ""
     });
 
-    const formResponse = await fetch(origin, {
+    const formResponse = await fetch(`${origin}/__forms.html`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded"

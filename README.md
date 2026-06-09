@@ -52,6 +52,8 @@ lib/
   scoring.ts        计分、排序和本地存储键
 netlify/functions/
   submit-lead.mjs   提交线索并记录访问IP
+public/
+  __forms.html       Netlify Forms 静态识别文件
 ```
 
 ## 部署建议

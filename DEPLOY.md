@@ -116,6 +116,8 @@ https://your-site-name.netlify.app
 
 IP 和地区信息由 Netlify Function 在服务端读取，字段来自 Netlify Functions 的 `context.ip` 和 `context.geo`。
 
+这个项目已经按 Netlify Next.js Runtime v5 的要求，把 Netlify Forms 的识别表单放在 `public/__forms.html`，提交目标也是 `/__forms.html`。
+
 如果你想收集客户测试结果，需要后续增加：
 
 - 数据库
