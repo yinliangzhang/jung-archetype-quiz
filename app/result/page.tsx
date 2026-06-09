@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import QRCode from "qrcode";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   CONTACT_STORAGE_KEY,
@@ -70,17 +71,17 @@ export default function ResultPage() {
     }));
   }, [result]);
 
-  function generatePoster() {
+  async function generatePoster() {
     if (!result) {
       return;
     }
 
     try {
-      const nextPosterUrl = createPosterDataUrl({
+      const nextPosterUrl = await createPosterDataUrl({
         primary,
         secondary,
         hidden,
-        origin: window.location.origin
+        qrUrl: new URL("/quiz", window.location.origin).toString()
       });
       setPosterUrl(nextPosterUrl);
       setPosterState("ready");
@@ -204,7 +205,7 @@ export default function ResultPage() {
               />
               <a
                 href={posterUrl}
-                download={`荣格12原型人格测试-${primary.profile.chineseName}.png`}
+                download={`荣格12原型人格测试-${primary.profile.chineseName}.jpg`}
                 className="mt-3 flex w-full justify-center rounded-2xl border border-[#dfd5c6] bg-[#fffdf8] px-5 py-3 text-sm font-semibold text-[#3f3a34]"
               >
                 下载海报
@@ -221,19 +222,18 @@ function createPosterDataUrl({
   primary,
   secondary,
   hidden,
-  origin
+  qrUrl
 }: {
   primary: ResultProfile;
   secondary: ResultProfile;
   hidden: ResultProfile;
-  origin: string;
+  qrUrl: string;
 }) {
   const canvas = document.createElement("canvas");
   const width = 1080;
   const height = 1600;
-  const scale = window.devicePixelRatio || 1;
-  canvas.width = width * scale;
-  canvas.height = height * scale;
+  canvas.width = width;
+  canvas.height = height;
   canvas.style.width = `${width}px`;
   canvas.style.height = `${height}px`;
 
@@ -241,8 +241,6 @@ function createPosterDataUrl({
   if (!context) {
     throw new Error("Canvas is not supported");
   }
-
-  context.scale(scale, scale);
 
   const background = context.createLinearGradient(0, 0, width, height);
   background.addColorStop(0, "#ecf7f2");
@@ -291,23 +289,25 @@ function createPosterDataUrl({
 
   context.fillStyle = "#191714";
   context.font = "700 32px Arial, PingFang SC, Microsoft YaHei, sans-serif";
-  context.fillText("生成你的专属人格报告", 120, 1370);
+  context.fillText("扫码生成你的专属人格报告", 120, 1360);
 
   context.fillStyle = "#817a70";
   context.font = "400 28px Arial, PingFang SC, Microsoft YaHei, sans-serif";
-  drawWrappedText(context, origin, 120, 1420, 840, 40, 2);
+  drawWrappedText(context, "24个问题，了解你的核心人格原型", 120, 1410, 540, 40, 2);
 
   context.fillStyle = "#0f766e";
   context.font = "700 26px Arial, PingFang SC, Microsoft YaHei, sans-serif";
-  context.fillText("24个问题，了解你的核心人格原型", 120, 1495);
+  context.fillText("荣格12原型人格测试", 120, 1495);
 
-  return canvas.toDataURL("image/png");
+  drawQrCode(context, qrUrl, 760, 1320, 180);
+
+  return canvas.toDataURL("image/jpeg", 0.92);
 }
 
 function downloadPoster(dataUrl: string, primaryName: string) {
   const link = document.createElement("a");
   link.href = dataUrl;
-  link.download = `荣格12原型人格测试-${primaryName}.png`;
+  link.download = `荣格12原型人格测试-${primaryName}.jpg`;
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -421,6 +421,41 @@ function drawWrappedText(
 
   if (line && lines < maxLines) {
     context.fillText(line, x, y);
+  }
+}
+
+function drawQrCode(
+  context: CanvasRenderingContext2D,
+  value: string,
+  x: number,
+  y: number,
+  size: number
+) {
+  const qr = QRCode.create(value, {
+    errorCorrectionLevel: "M"
+  });
+  const moduleCount = qr.modules.size;
+  const moduleSize = size / moduleCount;
+
+  roundedRect(context, x - 18, y - 18, size + 36, size + 36, 24);
+  context.fillStyle = "#ffffff";
+  context.fill();
+  context.strokeStyle = "#e7dfd2";
+  context.lineWidth = 2;
+  context.stroke();
+
+  context.fillStyle = "#191714";
+  for (let row = 0; row < moduleCount; row += 1) {
+    for (let column = 0; column < moduleCount; column += 1) {
+      if (qr.modules.get(column, row)) {
+        context.fillRect(
+          x + column * moduleSize,
+          y + row * moduleSize,
+          Math.ceil(moduleSize),
+          Math.ceil(moduleSize)
+        );
+      }
+    }
   }
 }
 
