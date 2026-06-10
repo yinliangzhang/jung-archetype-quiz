@@ -1,83 +1,44 @@
-# 荣格12原型人格测试
+# 荣格12人格原型测试
 
-一个移动端优先的 H5 网页应用。用户打开链接后完成 24 道题，自动生成荣格 12 原型人格分析结果。
+一个纯前端 H5 单页应用：落地页、24 题答题、计分结果页、分享链接、保存原型卡片图。
 
-## 功能
+## 本地预览
 
-- 首页：标题、副标题、开始测试按钮和说明文字
-- 测试页：24 道题，每题 4 个选项
-- 进度展示：第 X / 24 题
-- 支持上一题、下一题
-- 结果页：主人格、副人格、隐藏人格及得分
-- 结果卡扣：用户填写昵称和手机号后查看完整报告
-- 线索收集：部署到 Netlify 后，可在 Netlify Forms 后台查看昵称、手机号、访问IP和人格结果
-- 12 种人格完整分析文案
-- 分享按钮：生成结果海报，可下载到用户本机
-- 无需登录、无需后台、无需数据库
-- 测试结果保存在用户当前浏览器本地
-- 结果海报只展示人格结果，不包含昵称或手机号
+不需要安装依赖，直接打开 `index.html` 即可。
 
-## 技术栈
-
-- Next.js
-- React
-- TypeScript
-- Tailwind CSS
-
-## 本地运行
-
-先安装 Node.js 20 或更高版本。
+如果想用本地服务预览：
 
 ```bash
-npm install
-npm run dev
+python3 -m http.server 8787
 ```
 
 然后打开：
 
 ```text
-http://localhost:3000
+http://localhost:8787
 ```
 
-## 项目结构
+## 部署到 Netlify
 
-```text
-app/
-  page.tsx          首页
-  quiz/page.tsx     测试页
-  result/page.tsx   结果页
-lib/
-  archetypes.ts     12 种人格结果文案
-  questions.ts      24 道测试题
-  scoring.ts        计分、排序和本地存储键
-netlify/functions/
-  submit-lead.mjs   提交线索并记录访问IP
-public/
-  __forms.html       Netlify Forms 静态识别文件
-```
+1. 在 GitHub 创建一个新仓库。
+2. 把本目录里的文件上传到仓库根目录。
+3. 打开 Netlify，选择 Add new site → Import an existing project。
+4. 连接 GitHub 并选择这个仓库。
+5. Netlify 会读取 `netlify.toml`，发布目录为仓库根目录 `.`，无需构建命令。
+6. 点击 Deploy。
 
-## 部署建议
+## 文件说明
 
-如果 Vercel 注册不了，可以优先使用 Netlify。
+- `index.html`：页面入口。
+- `styles.css`：移动端优先的视觉样式。
+- `app.js`：题库、12 原型文案、计分逻辑和交互。
+- `netlify.toml`：Netlify 静态站点部署配置。
 
-Netlify 部署时一般选择：
+## 特性
 
-```text
-Build command: npm run build
-Publish directory: .next
-Node version: 20
-```
+- 纯前端，无登录、无后端、无数据库依赖。
+- 不依赖 `localStorage` 或 `sessionStorage`。
+- 支持 `?result=sage` 这类结果直达链接。
+- 分享按钮优先调用系统分享，不支持时复制链接。
+- 保存原型卡片图使用原生 Canvas 生成 PNG。
 
-项目里已经包含 `netlify.toml`，正常情况下 Netlify 会自动读取这些设置。
-
-更详细的新手步骤见：
-
-[DEPLOY.md](./DEPLOY.md)
-
-## 后续可扩展方向
-
-- 增加更多客户信息字段
-- 将结果提交到数据库
-- 接入 CRM
-- 增加后台查看客户测试结果
-- 增加海报二维码或更多分享样式
