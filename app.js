@@ -1,16 +1,16 @@
 const archetypeOrder = [
-  "sage",
-  "magician",
-  "creator",
+  "innocent",
+  "everyman",
   "hero",
-  "ruler",
+  "caregiver",
   "explorer",
   "rebel",
   "lover",
-  "caregiver",
-  "jester",
-  "everyman",
-  "innocent",
+  "creator",
+  "ruler",
+  "magician",
+  "sage",
+  "jester"
 ];
 
 const scoreKeys = [
@@ -30,245 +30,725 @@ const scoreKeys = [
 
 const questions = [
   {
-    id: 1,
-    text: "周末一整天空闲，你最想做的是？",
-    options: [
-      { label: "去没去过的地方探索", scores: { explorer: 1, rebel: 1 } },
-      { label: "把想搞懂的问题研究透", scores: { sage: 1, magician: 1 } },
-      { label: "约朋友聚一聚", scores: { jester: 1, everyman: 1 } },
-      { label: "做点帮到别人的事", scores: { caregiver: 1, hero: 1 } },
-    ],
+    "id": 1,
+    "text": "面对一个全新的机会，你通常会：",
+    "options": [
+      {
+        "label": "直接去尝试，看看会发生什么",
+        "scores": {
+          "explorer": 2
+        }
+      },
+      {
+        "label": "先收集资料，分析清楚再决定",
+        "scores": {
+          "sage": 2
+        }
+      },
+      {
+        "label": "思考如何做出自己的特色",
+        "scores": {
+          "creator": 2
+        }
+      },
+      {
+        "label": "判断它是否有实际价值和可控性",
+        "scores": {
+          "ruler": 2
+        }
+      }
+    ]
   },
   {
-    id: 2,
-    text: "面对一个全新挑战，你的第一反应是？",
-    options: [
-      { label: "冲上去，搞定它", scores: { hero: 1, ruler: 1 } },
-      { label: "先想清楚再动", scores: { sage: 1 } },
-      { label: "当成有趣的实验", scores: { creator: 1, magician: 1 } },
-      { label: "看看怎么和大家一起完成", scores: { everyman: 1, caregiver: 1 } },
-    ],
+    "id": 2,
+    "text": "别人最常觉得你：",
+    "options": [
+      {
+        "label": "乐观、简单、容易相信美好",
+        "scores": {
+          "innocent": 2
+        }
+      },
+      {
+        "label": "亲和、真实、没有距离感",
+        "scores": {
+          "everyman": 2
+        }
+      },
+      {
+        "label": "有担当，关键时刻能站出来",
+        "scores": {
+          "hero": 2
+        }
+      },
+      {
+        "label": "会照顾人，让人有安全感",
+        "scores": {
+          "caregiver": 2
+        }
+      }
+    ]
   },
   {
-    id: 3,
-    text: "你更认同哪句话？",
-    options: [
-      { label: "世界本该是美好的", scores: { innocent: 1 } },
-      { label: "规则就是用来打破的", scores: { rebel: 1 } },
-      { label: "真相比舒适更重要", scores: { sage: 1 } },
-      { label: "爱与连接最珍贵", scores: { lover: 1 } },
-    ],
+    "id": 3,
+    "text": "你最不能接受的是：",
+    "options": [
+      {
+        "label": "被限制自由",
+        "scores": {
+          "explorer": 2
+        }
+      },
+      {
+        "label": "混乱和失控",
+        "scores": {
+          "ruler": 2
+        }
+      },
+      {
+        "label": "虚伪和不真实",
+        "scores": {
+          "everyman": 2
+        }
+      },
+      {
+        "label": "愚昧和不讲逻辑",
+        "scores": {
+          "sage": 2
+        }
+      }
+    ]
   },
   {
-    id: 4,
-    text: "朋友遇到难关，你通常会？",
-    options: [
-      { label: "陪着他、照顾他情绪", scores: { caregiver: 1 } },
-      { label: "帮他分析问题出在哪", scores: { sage: 1 } },
-      { label: "拉他出去散心、逗他笑", scores: { jester: 1 } },
-      { label: "鼓励他勇敢面对", scores: { hero: 1 } },
-    ],
+    "id": 4,
+    "text": "你理想中的自己更像：",
+    "options": [
+      {
+        "label": "不断开拓的人",
+        "scores": {
+          "explorer": 2
+        }
+      },
+      {
+        "label": "看透问题本质的人",
+        "scores": {
+          "sage": 2
+        }
+      },
+      {
+        "label": "创造独特作品的人",
+        "scores": {
+          "creator": 2
+        }
+      },
+      {
+        "label": "掌控局面的人",
+        "scores": {
+          "ruler": 2
+        }
+      }
+    ]
   },
   {
-    id: 5,
-    text: "你最怕的是？",
-    options: [
-      { label: "失去自由、被困住", scores: { explorer: 1, rebel: 1 } },
-      { label: "平庸、没存在感", scores: { ruler: 1, creator: 1 } },
-      { label: "孤独、不被爱", scores: { lover: 1, everyman: 1 } },
-      { label: "被欺骗、活在假象里", scores: { sage: 1, innocent: 1 } },
-    ],
+    "id": 5,
+    "text": "团队遇到危机时，你更可能：",
+    "options": [
+      {
+        "label": "挺身而出解决问题",
+        "scores": {
+          "hero": 2
+        }
+      },
+      {
+        "label": "安抚大家，照顾情绪",
+        "scores": {
+          "caregiver": 2
+        }
+      },
+      {
+        "label": "寻找新的突破方法",
+        "scores": {
+          "magician": 2
+        }
+      },
+      {
+        "label": "推翻旧规则，重新来过",
+        "scores": {
+          "rebel": 2
+        }
+      }
+    ]
   },
   {
-    id: 6,
-    text: "理想的工作状态是？",
-    options: [
-      { label: "创造从未有过的东西", scores: { creator: 1 } },
-      { label: "带领团队、说了算", scores: { ruler: 1 } },
-      { label: "自由不受拘束", scores: { explorer: 1 } },
-      { label: "帮助和服务他人", scores: { caregiver: 1 } },
-    ],
+    "id": 6,
+    "text": "你更喜欢哪种生活状态：",
+    "options": [
+      {
+        "label": "简单、安心、没有太多复杂事",
+        "scores": {
+          "innocent": 2
+        }
+      },
+      {
+        "label": "和朋友、家人保持真实连接",
+        "scores": {
+          "everyman": 2
+        }
+      },
+      {
+        "label": "充满激情和情感体验",
+        "scores": {
+          "lover": 2
+        }
+      },
+      {
+        "label": "轻松有趣，享受当下",
+        "scores": {
+          "jester": 2
+        }
+      }
+    ]
   },
   {
-    id: 7,
-    text: "别人会怎么形容你？",
-    options: [
-      { label: "靠谱、踏实", scores: { everyman: 1, ruler: 1 } },
-      { label: "有趣、好玩", scores: { jester: 1 } },
-      { label: "有想法、有深度", scores: { sage: 1, creator: 1 } },
-      { label: "温暖、体贴", scores: { caregiver: 1, lover: 1 } },
-    ],
+    "id": 7,
+    "text": "做决定时，你最看重：",
+    "options": [
+      {
+        "label": "是否让我更自由",
+        "scores": {
+          "explorer": 2
+        }
+      },
+      {
+        "label": "是否符合逻辑和事实",
+        "scores": {
+          "sage": 2
+        }
+      },
+      {
+        "label": "是否能带来改变",
+        "scores": {
+          "magician": 2
+        }
+      },
+      {
+        "label": "是否能建立秩序和成果",
+        "scores": {
+          "ruler": 2
+        }
+      }
+    ]
   },
   {
-    id: 8,
-    text: "看到不公平的事，你会？",
-    options: [
-      { label: "站出来反抗", scores: { rebel: 1, hero: 1 } },
-      { label: "想办法从根上改变它", scores: { magician: 1 } },
-      { label: "难过，但相信会变好", scores: { innocent: 1 } },
-      { label: "先弄清来龙去脉", scores: { sage: 1 } },
-    ],
+    "id": 8,
+    "text": "你最希望别人记住你：",
+    "options": [
+      {
+        "label": "勇敢、强大、敢挑战",
+        "scores": {
+          "hero": 2
+        }
+      },
+      {
+        "label": "善良、可靠、愿意付出",
+        "scores": {
+          "caregiver": 2
+        }
+      },
+      {
+        "label": "独特、有创造力",
+        "scores": {
+          "creator": 2
+        }
+      },
+      {
+        "label": "有魅力、懂关系和情感",
+        "scores": {
+          "lover": 2
+        }
+      }
+    ]
   },
   {
-    id: 9,
-    text: "你做决定更多靠？",
-    options: [
-      { label: "逻辑和分析", scores: { sage: 1 } },
-      { label: "直觉和感受", scores: { lover: 1, magician: 1 } },
-      { label: "经验和常识", scores: { everyman: 1 } },
-      { label: "这事对不对、该不该", scores: { ruler: 1, hero: 1 } },
-    ],
+    "id": 9,
+    "text": "你面对规则时通常会：",
+    "options": [
+      {
+        "label": "遵守规则，让事情稳定运行",
+        "scores": {
+          "ruler": 2
+        }
+      },
+      {
+        "label": "理解规则背后的逻辑",
+        "scores": {
+          "sage": 2
+        }
+      },
+      {
+        "label": "如果规则不合理，就打破它",
+        "scores": {
+          "rebel": 2
+        }
+      },
+      {
+        "label": "看情况，不想太严肃",
+        "scores": {
+          "jester": 2
+        }
+      }
+    ]
   },
   {
-    id: 10,
-    text: "旅行你更想要？",
-    options: [
-      { label: "未知的冒险", scores: { explorer: 1 } },
-      { label: "浪漫的体验", scores: { lover: 1 } },
-      { label: "长见识、学东西", scores: { sage: 1 } },
-      { label: "放松开心就好", scores: { jester: 1, innocent: 1 } },
-    ],
+    "id": 10,
+    "text": "你更容易被什么打动：",
+    "options": [
+      {
+        "label": "纯粹和善意",
+        "scores": {
+          "innocent": 2
+        }
+      },
+      {
+        "label": "真实和平等",
+        "scores": {
+          "everyman": 2
+        }
+      },
+      {
+        "label": "爱与美",
+        "scores": {
+          "lover": 2
+        }
+      },
+      {
+        "label": "快乐和幽默",
+        "scores": {
+          "jester": 2
+        }
+      }
+    ]
   },
   {
-    id: 11,
-    text: "你身上最强的是？",
-    options: [
-      { label: "行动力", scores: { hero: 1 } },
-      { label: "想象力", scores: { creator: 1 } },
-      { label: "洞察力", scores: { sage: 1 } },
-      { label: "共情力", scores: { caregiver: 1, lover: 1 } },
-    ],
+    "id": 11,
+    "text": "面对压力时，你通常会：",
+    "options": [
+      {
+        "label": "告诉自己坚持住，扛过去",
+        "scores": {
+          "hero": 2
+        }
+      },
+      {
+        "label": "先保护身边的人",
+        "scores": {
+          "caregiver": 2
+        }
+      },
+      {
+        "label": "重新设计解决方案",
+        "scores": {
+          "creator": 2
+        }
+      },
+      {
+        "label": "寻找一个彻底转变的办法",
+        "scores": {
+          "magician": 2
+        }
+      }
+    ]
   },
   {
-    id: 12,
-    text: "群体里你常是？",
-    options: [
-      { label: "出主意、做主导的", scores: { ruler: 1 } },
-      { label: "活跃气氛的", scores: { jester: 1 } },
-      { label: "默默支持的", scores: { everyman: 1, caregiver: 1 } },
-      { label: "提出不同看法的", scores: { rebel: 1, sage: 1 } },
-    ],
+    "id": 12,
+    "text": "你最害怕：",
+    "options": [
+      {
+        "label": "失去希望",
+        "scores": {
+          "innocent": 2
+        }
+      },
+      {
+        "label": "被群体排斥",
+        "scores": {
+          "everyman": 2
+        }
+      },
+      {
+        "label": "失败和软弱",
+        "scores": {
+          "hero": 2
+        }
+      },
+      {
+        "label": "别人受到伤害",
+        "scores": {
+          "caregiver": 2
+        }
+      }
+    ]
   },
   {
-    id: 13,
-    text: "你更向往的人生是？",
-    options: [
-      { label: "不断突破、成就一番事业", scores: { hero: 1, ruler: 1 } },
-      { label: "自由自在、走遍世界", scores: { explorer: 1 } },
-      { label: "简单纯粹、内心安宁", scores: { innocent: 1 } },
-      { label: "充满爱与亲密关系", scores: { lover: 1 } },
-    ],
+    "id": 13,
+    "text": "你最享受的状态是：",
+    "options": [
+      {
+        "label": "在路上，发现新东西",
+        "scores": {
+          "explorer": 2
+        }
+      },
+      {
+        "label": "安静研究，搞懂复杂问题",
+        "scores": {
+          "sage": 2
+        }
+      },
+      {
+        "label": "把想法变成作品",
+        "scores": {
+          "creator": 2
+        }
+      },
+      {
+        "label": "把混乱变成秩序",
+        "scores": {
+          "ruler": 2
+        }
+      }
+    ]
   },
   {
-    id: 14,
-    text: "遇到规则你倾向？",
-    options: [
-      { label: "遵守，规则有其道理", scores: { ruler: 1, everyman: 1 } },
-      { label: "质疑，凭什么", scores: { rebel: 1 } },
-      { label: "理解它背后的逻辑", scores: { sage: 1 } },
-      { label: "改造出更好的玩法", scores: { creator: 1, magician: 1 } },
-    ],
+    "id": 14,
+    "text": "你更像哪一种角色：",
+    "options": [
+      {
+        "label": "挑战者",
+        "scores": {
+          "hero": 2
+        }
+      },
+      {
+        "label": "守护者",
+        "scores": {
+          "caregiver": 2
+        }
+      },
+      {
+        "label": "变革者",
+        "scores": {
+          "rebel": 2
+        }
+      },
+      {
+        "label": "点燃可能性的人",
+        "scores": {
+          "magician": 2
+        }
+      }
+    ]
   },
   {
-    id: 15,
-    text: "你最享受的时刻？",
-    options: [
-      { label: "完成一件作品", scores: { creator: 1 } },
-      { label: "帮到一个人", scores: { caregiver: 1 } },
-      { label: "看透一个道理", scores: { sage: 1 } },
-      { label: "和爱的人在一起", scores: { lover: 1 } },
-    ],
+    "id": 15,
+    "text": "在人际关系中，你更重视：",
+    "options": [
+      {
+        "label": "真诚自然",
+        "scores": {
+          "everyman": 2
+        }
+      },
+      {
+        "label": "亲密和吸引力",
+        "scores": {
+          "lover": 2
+        }
+      },
+      {
+        "label": "快乐轻松",
+        "scores": {
+          "jester": 2
+        }
+      },
+      {
+        "label": "彼此照顾",
+        "scores": {
+          "caregiver": 2
+        }
+      }
+    ]
   },
   {
-    id: 16,
-    text: "别人眼中你的「问题」可能是？",
-    options: [
-      { label: "想太多、不行动", scores: { sage: 1 } },
-      { label: "太爱冒险、不安定", scores: { explorer: 1, rebel: 1 } },
-      { label: "太替别人着想、忽略自己", scores: { caregiver: 1 } },
-      { label: "太想掌控", scores: { ruler: 1 } },
-    ],
+    "id": 16,
+    "text": "你做事的动力更多来自：",
+    "options": [
+      {
+        "label": "追求更好的世界",
+        "scores": {
+          "innocent": 2
+        }
+      },
+      {
+        "label": "证明自己的能力",
+        "scores": {
+          "hero": 2
+        }
+      },
+      {
+        "label": "表达内心的想法",
+        "scores": {
+          "creator": 2
+        }
+      },
+      {
+        "label": "建立影响力和掌控感",
+        "scores": {
+          "ruler": 2
+        }
+      }
+    ]
   },
   {
-    id: 17,
-    text: "你相信改变世界靠？",
-    options: [
-      { label: "勇气和行动", scores: { hero: 1 } },
-      { label: "智慧和认知", scores: { sage: 1 } },
-      { label: "创新和想象", scores: { creator: 1 } },
-      { label: "转化人心的力量", scores: { magician: 1 } },
-    ],
+    "id": 17,
+    "text": "当别人说“不可能”时，你会：",
+    "options": [
+      {
+        "label": "想办法证明可以做到",
+        "scores": {
+          "hero": 2
+        }
+      },
+      {
+        "label": "思考有没有新的路径",
+        "scores": {
+          "magician": 2
+        }
+      },
+      {
+        "label": "质疑这个限制本身",
+        "scores": {
+          "rebel": 2
+        }
+      },
+      {
+        "label": "先分析“不可能”的原因",
+        "scores": {
+          "sage": 2
+        }
+      }
+    ]
   },
   {
-    id: 18,
-    text: "压力大时你会？",
-    options: [
-      { label: "一个人静静想", scores: { sage: 1 } },
-      { label: "找乐子转移注意", scores: { jester: 1 } },
-      { label: "找人倾诉", scores: { lover: 1, everyman: 1 } },
-      { label: "投入做事发泄", scores: { hero: 1, creator: 1 } },
-    ],
+    "id": 18,
+    "text": "你最喜欢的表达方式是：",
+    "options": [
+      {
+        "label": "创作、设计、写作或表达观点",
+        "scores": {
+          "creator": 2
+        }
+      },
+      {
+        "label": "讲故事、制造气氛",
+        "scores": {
+          "jester": 2
+        }
+      },
+      {
+        "label": "建立亲密连接",
+        "scores": {
+          "lover": 2
+        }
+      },
+      {
+        "label": "提出清晰判断",
+        "scores": {
+          "sage": 2
+        }
+      }
+    ]
   },
   {
-    id: 19,
-    text: "你更欣赏哪种人？",
-    options: [
-      { label: "善良纯粹的", scores: { innocent: 1 } },
-      { label: "自由洒脱的", scores: { explorer: 1 } },
-      { label: "睿智清醒的", scores: { sage: 1 } },
-      { label: "有担当的", scores: { hero: 1, ruler: 1 } },
-    ],
+    "id": 19,
+    "text": "你最容易吸引哪类人：",
+    "options": [
+      {
+        "label": "需要鼓励和希望的人",
+        "scores": {
+          "innocent": 2
+        }
+      },
+      {
+        "label": "需要归属感的人",
+        "scores": {
+          "everyman": 2
+        }
+      },
+      {
+        "label": "需要保护和支持的人",
+        "scores": {
+          "caregiver": 2
+        }
+      },
+      {
+        "label": "需要方向和秩序的人",
+        "scores": {
+          "ruler": 2
+        }
+      }
+    ]
   },
   {
-    id: 20,
-    text: "对你来说成功是？",
-    options: [
-      { label: "影响力和地位", scores: { ruler: 1 } },
-      { label: "留下独一无二的作品", scores: { creator: 1 } },
-      { label: "内心的自由与体验", scores: { explorer: 1 } },
-      { label: "被爱、被需要", scores: { lover: 1, caregiver: 1 } },
-    ],
+    "id": 20,
+    "text": "你认为人生最重要的是：",
+    "options": [
+      {
+        "label": "自由体验",
+        "scores": {
+          "explorer": 2
+        }
+      },
+      {
+        "label": "理解真相",
+        "scores": {
+          "sage": 2
+        }
+      },
+      {
+        "label": "创造价值",
+        "scores": {
+          "creator": 2
+        }
+      },
+      {
+        "label": "改变命运",
+        "scores": {
+          "magician": 2
+        }
+      }
+    ]
   },
   {
-    id: 21,
-    text: "你做事的风格？",
-    options: [
-      { label: "谋定而后动", scores: { sage: 1, ruler: 1 } },
-      { label: "边走边试", scores: { explorer: 1, creator: 1 } },
-      { label: "跟着心走", scores: { lover: 1, magician: 1 } },
-      { label: "该出手就出手", scores: { hero: 1 } },
-    ],
+    "id": 21,
+    "text": "当环境太稳定时，你会：",
+    "options": [
+      {
+        "label": "感到无聊，想出去看看",
+        "scores": {
+          "explorer": 2
+        }
+      },
+      {
+        "label": "开始寻找新的变化",
+        "scores": {
+          "rebel": 2
+        }
+      },
+      {
+        "label": "想加入一些有趣的东西",
+        "scores": {
+          "jester": 2
+        }
+      },
+      {
+        "label": "继续维持稳定，因为稳定很重要",
+        "scores": {
+          "ruler": 2
+        }
+      }
+    ]
   },
   {
-    id: 22,
-    text: "你希望被记住为？",
-    options: [
-      { label: "一个智者", scores: { sage: 1 } },
-      { label: "一个英雄", scores: { hero: 1 } },
-      { label: "一个有趣的灵魂", scores: { jester: 1 } },
-      { label: "一个温暖的人", scores: { caregiver: 1 } },
-    ],
+    "id": 22,
+    "text": "你更相信：",
+    "options": [
+      {
+        "label": "世界本来可以很美好",
+        "scores": {
+          "innocent": 2
+        }
+      },
+      {
+        "label": "普通人之间的真实连接最珍贵",
+        "scores": {
+          "everyman": 2
+        }
+      },
+      {
+        "label": "爱和美能改变人",
+        "scores": {
+          "lover": 2
+        }
+      },
+      {
+        "label": "幽默能化解很多问题",
+        "scores": {
+          "jester": 2
+        }
+      }
+    ]
   },
   {
-    id: 23,
-    text: "哪种说法更打动你？",
-    options: [
-      { label: "万物皆可转化", scores: { magician: 1 } },
-      { label: "活在当下、保持快乐", scores: { jester: 1, innocent: 1 } },
-      { label: "忠于自我、打破常规", scores: { rebel: 1 } },
-      { label: "守护所珍视的", scores: { caregiver: 1, ruler: 1 } },
-    ],
+    "id": 23,
+    "text": "如果你要影响别人，你更倾向于：",
+    "options": [
+      {
+        "label": "用勇气和行动带动别人",
+        "scores": {
+          "hero": 2
+        }
+      },
+      {
+        "label": "用关心和支持影响别人",
+        "scores": {
+          "caregiver": 2
+        }
+      },
+      {
+        "label": "用颠覆性的观点唤醒别人",
+        "scores": {
+          "rebel": 2
+        }
+      },
+      {
+        "label": "用愿景和信念改变别人",
+        "scores": {
+          "magician": 2
+        }
+      }
+    ]
   },
   {
-    id: 24,
-    text: "你内心深处最想要的是？",
-    options: [
-      { label: "自由", scores: { explorer: 1 } },
-      { label: "真相", scores: { sage: 1 } },
-      { label: "爱", scores: { lover: 1 } },
-      { label: "改变，让事情变得不同", scores: { magician: 1, hero: 1 } },
-    ],
-  },
+    "id": 24,
+    "text": "完成一件事后，你最在意：",
+    "options": [
+      {
+        "label": "过程是否有趣",
+        "scores": {
+          "jester": 2
+        }
+      },
+      {
+        "label": "关系是否更亲近",
+        "scores": {
+          "lover": 2
+        }
+      },
+      {
+        "label": "作品是否独特",
+        "scores": {
+          "creator": 2
+        }
+      },
+      {
+        "label": "结果是否成功且可持续",
+        "scores": {
+          "ruler": 2
+        }
+      }
+    ]
+  }
 ];
 
 const archetypes = {
@@ -495,6 +975,7 @@ function calculateResult() {
   return {
     primary: sorted[0],
     secondary: sorted[1],
+    hidden: sorted[2],
     scores,
   };
 }
@@ -594,7 +1075,7 @@ function renderResult() {
         </div>
         <p class="result-core">${escapeHtml(item.core)}</p>
         <div class="keyword-strip">${escapeHtml(item.keywords)}</div>
-        ${secondary ? `<p class="meta-note">你的次要原型是 ${secondary.name} ${secondary.emoji}：它会为你的主原型增添另一层气质。</p>` : ""}
+        ${resultPersonaNote(state.result)}
       </article>
 
       <div class="result-grid">
@@ -623,6 +1104,15 @@ function renderResult() {
       </aside>
     </section>
   `;
+}
+
+function resultPersonaNote(result) {
+  const secondary = result.secondary ? archetypes[result.secondary] : null;
+  const hidden = result.hidden ? archetypes[result.hidden] : null;
+  if (!secondary && !hidden) return "";
+  const secondaryText = secondary ? `你的副人格是 ${secondary.name} ${secondary.emoji}` : "";
+  const hiddenText = hidden ? `隐藏人格是 ${hidden.name} ${hidden.emoji}` : "";
+  return `<p class="meta-note">${[secondaryText, hiddenText].filter(Boolean).join("；")}。它们会为你的主原型增添另一层气质。</p>`;
 }
 
 function resultSection(title, text, full = false) {
@@ -862,7 +1352,7 @@ function boot() {
   const params = new URLSearchParams(window.location.search);
   const resultKey = params.get("result");
   if (resultKey && archetypes[resultKey]) {
-    state.result = { primary: resultKey, secondary: null, scores: null };
+    state.result = { primary: resultKey, secondary: null, hidden: null, scores: null };
     state.view = "result";
   }
   render();
